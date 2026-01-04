@@ -361,7 +361,7 @@ visualize_audit <- function(suitcase){
     )
   
   # Create plot
-  df_data %>%
+  plot_obj <- df_data %>%
     ggplot() +
     geom_point(
       aes(x=dose_up,
@@ -397,6 +397,11 @@ visualize_audit <- function(suitcase){
     theme(
       plot.caption=element_text(hjust=0)
     )
+  
+  # Update & return suitcase
+  suitcase$audit_plot <- plot_obj
+  
+  return(suitcase)
 }
 
 
