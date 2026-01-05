@@ -17,7 +17,7 @@ import_data <- function(source, path, dataset_name, pkg){
     import_msg <- "Success: Raw data imported from file."
     
   } else if(source=="package"){
-    data(dataset_name, package=pkg, envir=environment())
+    data(list=dataset_name, package=pkg, envir=environment())
     raw_data <- get(dataset_name)
     
     #store message
