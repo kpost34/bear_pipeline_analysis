@@ -196,8 +196,17 @@ select_best_model <- function(suitcase){
       }
       
       #update & return suitcase
+      sig_winner_label <- if(sig_winner=="BC.5"){
+        "Brain-Cousens (Hormetic)"
+      } else if(sig_winner=="LL.4"){
+        "Log-Logistic (Standard)"
+      } else if(sig_winner=="LL.3"){
+        "Log-Logistic (Fixed Baseline)"
+      }
+      
       suitcase$modeling$winner <- mods_list[[sig_winner]]
       suitcase$modeling$winner_name <- sig_winner
+      suitcase$modeling$winner_label <- sig_winner_label
       suitcase$modeling$rationale <- rationale_sig_txt
       
       return(suitcase)
@@ -230,6 +239,7 @@ select_best_model <- function(suitcase){
       #update & return suitcase
       suitcase$modeling$winner <- mod_lm
       suitcase$modeling$winner_name <- "LM"
+      suitcase$modeling$winner_label <- "Linear Trend"
       suitcase$modeling$rationale <- rationale_lm_txt
       
       return(suitcase)
@@ -251,6 +261,7 @@ select_best_model <- function(suitcase){
     #update & return suitcase
     suitcase$modeling$winner <- mod_null
     suitcase$modeling$winner_name <- "Null"
+    suitcase$modeling$winner_label <- "No Detectable Response"
     suitcase$modeling$rationale <- rationale_null_txt
     
     return(suitcase)
