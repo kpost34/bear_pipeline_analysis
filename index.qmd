@@ -49,7 +49,6 @@ model_label <- my_suitcase$modeling$winner_label
 model_rationale <- my_suitcase$modeling$rationale
 model_table <- my_suitcase$modeling$table
 
-
 ```
 
 ## Data Quality & Suitability Audit
@@ -96,8 +95,18 @@ The following figure illustrates the distribution of raw data points (replicates
 `r if(n_outliers > 0){
 "Any points highlighted with **red X's** represent identified outliers that were evaluated during the quality control sweep."}`
 
-![](`r fp_audit_plot`){fig-align="center" width="80%"}
 
+
+
+```{r} 
+#| label: fig-audit
+#| fig-cap: "Visual Audit: Distribution of raw replicates across dose levels."
+#| fig-align: center
+#| out-width: "7in"
+
+knitr::include_graphics(fp_audit_plot)
+
+```
 
 
 ## Dose-Response Analysis & Parameter Estimation
@@ -110,7 +119,16 @@ paste("The biological response was characterized using a", paste0("**", model_la
 
 
 ### The Final Curve
-![](`r fp_final_plot`){fig-align="center" width="80%`}
+
+```{r} 
+#| label: fig-final
+#| fig-cap: !expr "paste('Final Dose-Response Curve: Fitted model for', my_suitcase$metadata$y_name)"
+#| fig-align: center
+#| out-width: "7in"
+
+knitr::include_graphics(fp_final_plot)
+
+```
 
 
 ## Primary Potency Parameters
@@ -121,6 +139,7 @@ paste("The table below summarizes the statistical output and potency estimates f
 }`
 
 `r if(model_name != "Null") {model_table}`
+
 
 
 
