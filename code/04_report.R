@@ -67,9 +67,10 @@ visualize_results <- function(suitcase){
     pull(dose)
   
   # Create labels
-  dose_lab <- suitcase$dose_label
-  response_lab <- suitcase$response_label
+  dose_lab <- suitcase$metadata$x_label
+  response_lab <- suitcase$metadata$y_label
   
+  # Build annotations
   ed50 <- suitcase$modeling$results$ed50_est
   ed50_lab <- if(!is.na(ed50)){
     paste0("ED[50]*':'~", round(ed50, 2))
@@ -94,11 +95,11 @@ visualize_results <- function(suitcase){
       labels=as.character(doses),
       minor_breaks=NULL
       ) +
-    scale_y_continuous(expand=expansion(mult=c(0, 0.1)), limits=c(0, NA)) +
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.1))) +
     annotate(geom="label", x=max(df_curve$dose), y=max(df_curve$upper), hjust=1, vjust=1,
              label=ed50_lab, parse=TRUE) +
     {if(mod_name!="Null")
-      annotate(geom="label", x=max(df_curve$dose),, y=max(df_curve$upper)*0.9, hjust=1, vjust=1,
+      annotate(geom="label", x=max(df_curve$dose), y=max(df_curve$upper)*0.9, hjust=1, vjust=1,
                label=r2_lab, parse=TRUE)
       } +
     labs(x=dose_lab,
