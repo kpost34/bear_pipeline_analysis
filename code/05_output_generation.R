@@ -2,7 +2,10 @@
 
 
 # Set Up Function===================================================================================
+# Verifies and creates the project directory structure (plots, tables, models) to ensure safe file 
+  #export
 initialize_filesystem <- function(){
+  
   # Create folder dirs
   fp_plot <- here("output", "plots")
   fp_table <- here("output", "tables")
@@ -27,7 +30,15 @@ initialize_filesystem <- function(){
 
 
 # Image Export======================================================================================
+# Iteratively exports audit and final curve plots as high-resolution PNG and vector-based PDF files
 export_plots <- function(suitcase){
+  
+  # Guard: If no audit plot exists, skip everything
+  if(is.null(suitcase$audit_plot)){
+    message("Skip: No plots available for export.")
+    return(suitcase)
+  }
+  
   # Extract suitcase objs
   name <- suitcase$dataset_name
   plot_audit <- suitcase$audit_plot
@@ -45,12 +56,18 @@ export_plots <- function(suitcase){
   fp_final_png <- here(fp_plot, paste0(name, "_", nm_final, ".png"))
   fp_final_pdf <- here(fp_plot, paste0(name, "_", nm_final, ".pdf"))
   
+  # Determine which plots exist to prevent walk2 failure
+  if(is.null(plot_final)){
+    fps <- c(fp_audit_png, fp_audit_pdf)
+    plots <- list(plot_audit, plot_audit)
+    msg_count <- "2"
+  } else{
+    fps <- c(fp_audit_png, fp_audit_pdf, fp_final_png, fp_final_pdf) 
+    plots <- rep(list(plot_audit, plot_final), each=2)
+    msg_count <- "4"
+  }
+  
   # Save plots
-  ## create vectors
-  fps <- c(fp_audit_png, fp_audit_pdf, fp_final_png, fp_final_pdf) 
-  
-  plots <- rep(list(plot_audit, plot_final), each=2)
-  
   purrr::walk2(fps, plots, function(x, y){
     ggsave(filename=x,
            plot=y,
@@ -60,17 +77,28 @@ export_plots <- function(suitcase){
            dpi=300)
   })
   
-  # Print message
-  plots_msg <- paste("Success: 4 plot files (PNG/PDF) exported for", 
-                     name,
-                     "to output/plots/")
+  # Print message & return suitcase
+  plots_msg <- paste("Success:", msg_count, "plot files (PNG/PDF) exported for", 
+                     name, "to output/plots/")
   message(plots_msg)
+  
+  return(suitcase)
+  
 }
 
 
 
 # Export Summary Table==============================================================================
+# Formats statistical results with high precision and exports a comprehensive CSV summary to the 
+  #tables directory
 export_summary <- function(suitcase){
+  
+  # Guard: Skip if modeling results are missing (Structural or Biological failure)
+  if(is.null(suitcase$modeling$results)){
+    message("Skip: No summary results available to export.")
+    return(suitcase)
+  }
+  
   # Extract suitcase info
   name <- suitcase$dataset_name
   df_results0 <- suitcase$modeling$results
@@ -89,17 +117,28 @@ export_summary <- function(suitcase){
   fp_table <- here("output", "tables", paste0(name, "_summary_stats.csv"))
   write_csv(x=df_results, file=fp_table)
     
-  # Print message
+  # Print message & return suitcase
   table_msg <- paste("Success: Summary table exported for",
                      name,
                      "to output/tables/")
   message(table_msg)
+  
+  return(suitcase)
+  
 }
 
 
 
 # Save Model========================================================================================
+# Archives the winning 'drc' or 'lm' model object as an RDS file for future reloading or meta-analysis
 save_model_object <- function(suitcase){
+  
+  # Guard: Skip if no winning model was selected
+  if(is.null(suitcase$modeling$winner)){
+    message("Skip: No model object available to save.")
+    return(suitcase)
+  }
+  
   # Extract objs from suitcase
   name <- suitcase$dataset_name
   mod <- suitcase$modeling$winner
@@ -108,17 +147,23 @@ save_model_object <- function(suitcase){
   fp_model <- here("output", "models", paste0(name, "_model.rds"))
   saveRDS(object=mod, file=fp_model)
   
-  # Print message
+  # Print message & return suitcase
   model_msg <- paste("Success: Model object for",
                      name,
                      "saved to output/models/")
   message(model_msg)
+  
+  return(suitcase)
+  
 }
 
 
 
 # Save Suitcase=====================================================================================
+# Serializes the entire analysis state—including data, metadata, and plots—into a single 
+  #'full_suitcase' RDS archive
 save_suitcase <- function(suitcase){
+  
   # Extract obj from suitcase
   name <- suitcase$dataset_name
   
@@ -129,8 +174,10 @@ save_suitcase <- function(suitcase){
   # Save suitcase
   saveRDS(object=suitcase, file=fp_suitcase)
   
-  # Print message
+  # Print message & return suitcase
   message("Analysis state has been archived.")
+  
+  return(suitcase)
                       
 }
 
