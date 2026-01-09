@@ -9,7 +9,7 @@ format:
     theme: cosmo
     toc: true
     code-fold: true
-    self-contained: true
+    embed-resources: true
 execute:
   echo: false
   warning: false
@@ -71,19 +71,21 @@ if(pass_structural) {
 
 
 <!-- SNR Banner -->
-`r if(snr >= 5) {
-"::: {.callout-note appearance='simple'}\n## [PASS] Robust Signal: This dataset provides high confidence for parameter estimation.\n:::"
-} else if(snr >= 3) {
-"::: {.callout-warning appearance='simple'}\n## [REVIEW] Acceptable Signal: Results are reliable, but observe confidence intervals.\n:::"
-} else {
-"::: {.callout-important appearance='simple'}\n## [CAUTION] Low Signal: Model results should be considered exploratory.\n:::"
+`r if(pass_structural) {
+  if(snr >= 5) {
+  "::: {.callout-note appearance='simple'}\n## [PASS] Robust Signal: This dataset provides high confidence for parameter estimation.\n:::"
+  } else if(snr >= 3) {
+  "::: {.callout-warning appearance='simple'}\n## [REVIEW] Acceptable Signal: Results are reliable, but observe confidence intervals.\n:::"
+  } else {
+  "::: {.callout-important appearance='simple'}\n## [CAUTION] Low Signal: Model results should be considered exploratory.\n:::"
+  }
 }`
 
 
 
 ## Data Quality & Suitability Audit
 ### Trial Robustness
-* **Signal-to-Noise Ratio (SNR):** The analysis of the dataset returned an SNR of `r snr`, which suggests `r if(snr>=5){
+* **Signal-to-Noise Ratio (SNR):** In this pipeline, an SNR > 3 is required for reliable parameter estimation; values below this threshold trigger a warning regarding $ED_{50}$ stability. The analysis of this dataset returned an SNR of `r snr`, which suggests `r if(snr>=5){
 "robust treatment effect with minimal background interference."
 } else if(snr >= 3 & snr < 5){
 "clear dose-response signal; suitable for reliable parameter estimation."
@@ -105,6 +107,8 @@ if(pass_structural) {
 
 
 ### Data Integrity
+* **Structural Integrity:** The dataset passed all automated pre-processing checks, confirming appropriate data types and column mapping for `r target_study`.
+
 * **Outlier Count:** `r if(n_outliers==0){
 paste("No outliers were found in the", target_study,"dataset.")
 } else if(n_outliers==1){
@@ -141,7 +145,7 @@ knitr::include_graphics(fp_audit_plot)
 
 
 ## Dose-Response Analysis & Parameter Estimation
-## Modeling Methodology
+### Modeling Methodology
 The data were evaluated against a hierarchy of candidate models to determine the most statistically appropriate and biologically relevant representation of the dose-response relationship.
 
 ### Selection Framework
