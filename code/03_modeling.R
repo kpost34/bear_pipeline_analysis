@@ -375,7 +375,7 @@ extract_winning_stats <- function(suitcase){
       rename_with(rename_params) %>%
       dplyr::select(!starts_with("e")) %>%
       #conditionally add d and f_param to LL models
-      {if(mod_name=="LL.3") mutate(., upper_d=1) else .} %>%
+      {if(mod_name=="LL.3") mutate(., lower_c=0) else .} %>%
       {if(str_detect(mod_name, "^LL")) mutate(., f_param=NA_real_) else .} 
   
     #metrics
@@ -391,7 +391,6 @@ extract_winning_stats <- function(suitcase){
     
     ## LM 
     if(mod_name=="LM"){
-
       #ed
       df_ed <- tibble(ed50_est=ed50 <- (-0.5*intercept_lm)/slope_lm) %>%
         mutate(
