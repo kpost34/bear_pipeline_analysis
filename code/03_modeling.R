@@ -35,15 +35,14 @@ init_modeling_audit <- function(suitcase){
 fit_safely <- function(suitcase, mod_name){
   df <- suitcase$data
   
-  # Store error message & model as function
+  # Store error message 
   mod_name_clean <- str_remove(mod_name, "\\.")
   msg_error <- paste("Error:", mod_name_clean, "model did not converge.")
-  
-  model_fn <- match.fun(mod_name)
   
   # Fit model
   #drc model
   if(mod_name %in% c("BC.5", "LL.4", "LL.3")){
+    model_fn <- match.fun(mod_name)
     mod <- tryCatch(
       {
       drm(response ~ dose, data = df, fct = model_fn())
@@ -103,7 +102,7 @@ update_model_info <- function(suitcase, mod, mod_name){
     p_val <- if(mod_name %in% c("BC.5", "LL.4", "LL.3")){
       summary(mod)$coefficients["b:(Intercept)", "p-value"]
     } else if(mod_name=="LM"){
-      summary(mod)$coefficients["dose", "PR(>|t|)"]
+      summary(mod)$coefficients["dose", "Pr(>|t|)"]
     } else{NA}
   
     #update & return suitcase
@@ -215,7 +214,7 @@ select_best_model <- function(suitcase){
     }
     
     # Assess p-value
-    slope_p_signif <- df_sig$slope_p[df_sig$model==sig_winner] < 0.05
+    slope_p_signif <- isTRUE(df_sig$slope_p[df_sig$model==sig_winner] < 0.05)
     
     # If slope_p significant
     if(slope_p_signif){
@@ -257,9 +256,9 @@ select_best_model <- function(suitcase){
     suitcase <- update_model_info(suitcase, mod=mod_lm, mod_name="LM")
     
     df_lm <- suitcase$modeling$audit
-    
+
     if(!is.null(mod_lm)){
-      slope_p_signif <- df_lm$slope_p[df_lm$model=="LM"] < 0.05
+      slope_p_signif <- isTRUE(df_lm$slope_p[df_lm$model=="LM"] < 0.05)
     }
     
     # If slope_p significant
