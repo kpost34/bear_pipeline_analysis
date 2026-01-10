@@ -234,11 +234,9 @@ select_best_model <- function(suitcase){
       
       #create rationale string
       rationale_sig_txt <- if(n_sig>1){
-        paste(sig_winner_label, "selected: Cleared 2-unit AIC threshold over simpler sigmoids;",
-              "slope significant (p < 0.05)")
+        "Cleared 2-unit AIC threshold over simpler sigmoids; slope significant (p < 0.05)"
       } else if(n_sig==1){
-        paste(sig_winner_label, "selected: Only converged sigmoid model; slope significant",
-              "(p < 0.05)")
+        "Only converged sigmoid model; slope significant (p < 0.05)"
       }
       
       #update & return suitcase
@@ -272,9 +270,12 @@ select_best_model <- function(suitcase){
       
       #create rationale string
       rationale_lm_txt <- if(n_sig==0){
-        "Linear Trend selected: Sigmoidal models failed to converge; slope significant (p < 0.05)."
+        "Sigmoidal models failed to converge; slope significant (p < 0.05)"
       } else if(n_sig>0) {
-        "Linear Trend selected: Sigmoidal models converged but lacked significant slopes (p > 0.05); linear slope significant (p < 0.05)."
+        paste(
+          "Sigmoidal models converged but lacked significant slopes (p > 0.05);",
+          "linear slope significant (p < 0.05)"
+        )
       }
       
       #update & return suitcase
@@ -300,8 +301,8 @@ select_best_model <- function(suitcase){
     
     #create rationale string
     rationale_null_txt <- paste(
-      "No Detectable Response: Models failed to converge or lacked a significant dose-response", 
-      "slope (p > 0.05); defaulting to intercept-only model."
+      "Models failed to converge or lacked a significant dose-response", 
+      "slope (p > 0.05); defaulting to intercept-only model"
     )
     
     #update & return suitcase
@@ -362,12 +363,16 @@ extract_winning_stats <- function(suitcase){
   if(str_detect(mod_name, "LL|BC")){
     
     #ed
-    df_ed <- ED(mod, 50, interval="delta", display=FALSE) %>% 
+    df_ed <- tryCatch({
+      ED(mod, 50, interval="delta", display=FALSE) %>% 
       as_tibble() %>%
       clean_names() %>%
       #prevent negative lower bounds
       mutate(lower=ifelse(lower<0, 0, lower)) %>%
       set_names(paste("ed50", c("est", "se", "ci_low", "ci_high"), sep="_"))
+    }, error=function(e) {
+      tibble(ed50_est=NA_real_, ed50_se=NA_real_, ed50_ci_low=NA_real_, ed50_ci_high=NA_real_)
+    })
     
     #parameters
     df_params <- coef(mod) %>%
