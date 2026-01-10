@@ -140,7 +140,8 @@ visualize_results <- function(suitcase){
       } +
     labs(x=dose_lab,
          y=response_lab) +
-    theme_bw() 
+    theme_bw() +
+    theme(axis.text.x=element_text(angle=45, hjust=1))
   
   # Update & return suitcase
   suitcase$modeling$plot <- plot_obj
