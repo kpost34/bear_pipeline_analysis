@@ -1,6 +1,6 @@
 ---
 params:
-  target_study: "leaflength"
+  target_study: "chaos_data"
 title: "Bio-Efficacy Dose-Response Report: `r stringr::str_to_title(params$target_study)`"
 author: "Keith Post"
 date: last-modified
@@ -24,45 +24,52 @@ execute:
 library(here)
 library(tidyverse)
 
-# 0. Seed model_name
-model_name <- ""
-
 
 # 1. Load suitcase
 my_suitcase <- here("output", "models", paste0(params$target_study, "_full_suitcase.rds")) %>%
                       readRDS()
 
 
-# 2. GATE 1: Did we get past structural validation and calculate stats? 
+# 2. Initialize Variables with Fallbacks
+snr <- 0
+dose_ratio <- 0
+n_outliers <- 0
+at_plateau <- FALSE
+target_study <- params$target_study
+
+pass_modeling <- FALSE
+model_name <- ""
+model_label <- ""
+model_rationale <- ""
+model_table <- NULL
+
+
+# 2. GATE 1: Structural Audit
 pass_audit <- !is.null(my_suitcase$stats)
 
-
-# 3. GATE 2: Did the modeling pipeline run?
-pass_modeling <- !is.null(my_suitcase$modeling$winner_name)
-
-
-# 4. Define Audit Variables (Only if Gate 1 passed)
 if(pass_audit) {
-  target_study <- params$target_study
   fp_audit_plot <- here("output", "plots", paste0(target_study, "_audit_plot.png"))
   
-  #metrics for prose
+  #extract actual values
   snr <- round(my_suitcase$snr %||% 0, 2)
   dose_ratio <- round(my_suitcase$dose_ratio %||% 0, 2)
   n_outliers <- length(my_suitcase$outlier_indices)
-  at_plateau <- my_suitcase$at_plateau
-}
-
-
-# 5. Define Modeling Variables (Only if Gate 2 passed)
-if(pass_modeling) {
-  fp_final_plot <- here("output", "plots", paste0(target_study, "_final_curve.png"))
-  model_name <- my_suitcase$modeling$winner_name
-  model_label <- my_suitcase$modeling$winner_label
-  model_rationale <- my_suitcase$modeling$rationale
-  model_table <- my_suitcase$modeling$table
+  at_plateau <- my_suitcase$at_plateau %||% FALSE
+  
+  
+  # 3. GATE 2: Modeling Audit
+  pass_modeling <- !is.null(my_suitcase$modeling$winner_name)
+  
+  if(pass_modeling) {
+      fp_final_plot <- here("output", "plots", paste0(target_study, "_final_curve.png"))
+      model_name <- my_suitcase$modeling$winner_name
+      model_label <- my_suitcase$modeling$winner_label
+      model_rationale <- my_suitcase$modeling$rationale
+      model_table <- my_suitcase$modeling$table
+    }
   
 }
+
 
 ```
 
@@ -93,7 +100,14 @@ if(pass_modeling) {
 }`
 
 
-::: {.content-visible when-is-expr="pass_audit"}
+```{r}
+#| label: structural-eject-button
+
+# Fail Gate 1
+if(!pass_audit) knitr::knit_exit()
+
+```
+
 
 ## Data Quality & Suitability Audit
 ### Trial Robustness
@@ -142,8 +156,6 @@ The following figure illustrates the distribution of raw data points (replicates
 "Any points highlighted with **red X's** represent identified outliers that were evaluated during the quality control sweep."}`
 
 
-
-
 ```{r} 
 #| label: fig-audit
 #| eval: !expr pass_audit
@@ -155,10 +167,16 @@ knitr::include_graphics(fp_audit_plot)
 
 ```
 
-:::
 
 
-::: {.content-visible when-is-expr="pass_modeling"}
+```{r}
+#| label: biological-eject-button
+
+# Pass Gate 1 (structural audit) but fail Gate 2 (modeling)
+if(!pass_modeling) knitr::knit_exit()
+
+```
+
 
 ## Dose-Response Analysis & Parameter Estimation
 ### Modeling Methodology
@@ -215,8 +233,5 @@ paste("The table below summarizes the statistical output and potency estimates f
 model_table
 
 ```
-
-:::
-
 
 
