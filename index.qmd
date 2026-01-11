@@ -1,6 +1,6 @@
 ---
 params:
-  target_study: "chaos_data"
+  target_study: "ryegrass"
 title: "Bio-Efficacy Dose-Response Report: `r stringr::str_to_title(params$target_study)`"
 author: "Keith Post"
 date: last-modified
